@@ -89,7 +89,7 @@ function __getLineNumber()
 	{
 		try
 		{
-			return e.stack.split("\n")[4].split(":")[1];
+			return e.stack.split("\n")[4].split(":")[1]-2;
 		}
 		catch(e) // TODO Make this work in Safari.
 		{
