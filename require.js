@@ -196,6 +196,11 @@ function __require(path, cb)
 {
 	var originalPath = path;
 	var href = document.location.href;
+	var q = href.indexOf("?");
+	if(q !== -1)
+	{
+		href = href.substring(0,q);
+	}
 	var lastSlash = href.lastIndexOf("/");
 	var url;
 	if(-1 !== lastSlash)
