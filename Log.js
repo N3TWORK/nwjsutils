@@ -40,6 +40,7 @@ Log.error = function(scope, msg)
 {
 	if(this.LogMask & this.ERROR)
 	{
+		__wkDebugLog("Error: " + scope + " " + msg);
 		console.log("Error: " + scope + " " + msg);
 		console.trace();
 		throw ""
@@ -56,6 +57,7 @@ Log.warn = function(scope, msg)
 {
 	if(this.LogMask & this.WARN)
 	{
+		__wkDebugLog("Warn: " + scope + ": " + msg);
 		console.log("Warn: " + scope + " " + msg);
 	}
 }
@@ -70,6 +72,7 @@ Log.debug = function(scope, msg)
 {
 	if(this.LogMask & this.DEBUG)
 	{
+		__wkDebugLog("Debug: " + scope + ": " + msg);
 		console.log("Debug: " + scope + ": " + msg);
 	}
 }
@@ -98,6 +101,21 @@ function __getLineNumber()
 	}
 }
 
+/**
+@function __wkDebugLog - prints debug log messages to Xcode debug console via WKScriptMessage if window.webkit is defined.
+*/
+function __wkDebugLog(msg)
+{
+	if(typeof window.webkit !== "undefined")
+	{
+		console.log("window.webkit is defined");
+		if(typeof window.webkit.messageHandlers.debugLog !== "undefined")
+		{
+		    window.webkit.messageHandlers.debugLog.postMessage(msg);
+		}	
+	}
+}
+
 
 var Logger = Class.extend({
 	/**
@@ -121,6 +139,7 @@ var Logger = Class.extend({
 		if(this.LogMask & Log.DEBUG)
 		{
 			var fn =arguments.callee.caller.prototype.name?arguments.callee.caller.prototype.name:arguments.callee.caller.name;
+		    __wkDebugLog("Debug: " + this.scope + ":"+ __getLineNumber() + " " + fn + ": " + msg);
 			console.log("Debug: " + this.scope + ":"+ __getLineNumber() + " " + fn + ": " + msg);
 		}
 	},
@@ -134,6 +153,7 @@ var Logger = Class.extend({
 		if(this.LogMask & Log.WARN)
 		{
 			var fn =arguments.callee.caller.prototype.name?arguments.callee.caller.prototype.name:arguments.callee.caller.name;
+			__wkDebugLog("Warn: " + this.scope + ":"+ __getLineNumber() + " " + fn + ": " + msg);
 			console.log("Warn: " + this.scope + ":"+ __getLineNumber() + " " + fn + ": " + msg);
 		}
 	},
@@ -147,6 +167,7 @@ var Logger = Class.extend({
 		if(this.LogMask & Log.ERROR)
 		{
 			var fn =arguments.callee.caller.prototype.name?arguments.callee.caller.prototype.name:arguments.callee.caller.name;
+			__wkDebugLog("Error: " + this.scope + ":"+ __getLineNumber() + " " + fn + ": " + msg);
 			console.log("Error: " + this.scope + ":"+ __getLineNumber() + " " + fn + ": " + msg);
 			console.trace();
 			throw "";
