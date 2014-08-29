@@ -108,7 +108,6 @@ function __wkDebugLog(msg)
 {
 	if(typeof window.webkit !== "undefined")
 	{
-		console.log("window.webkit is defined");
 		if(typeof window.webkit.messageHandlers.debugLog !== "undefined")
 		{
 		    window.webkit.messageHandlers.debugLog.postMessage(msg);
@@ -127,7 +126,7 @@ var Logger = Class.extend({
 	init: function(scope)
 	{
 		this.scope = scope;
-		this.LogMask = Log.DEBUG | Log.WARN | Log.ERROR;
+		this.LogMask = Log.LogMask;
 	},
 
 	/**
