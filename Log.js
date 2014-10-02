@@ -109,7 +109,7 @@ var Logger = Class.extend({
 	init: function(scope)
 	{
 		this.scope = scope;
-		this.LogMask = Log.DEBUG | Log.WARN | Log.ERROR;
+		this.LogMask = Log.LogMask;
 	},
 
 	/**
