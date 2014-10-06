@@ -1,3 +1,4 @@
+'use strict';
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Class.js
@@ -128,5 +129,125 @@
     return Class;
   };
 })();
+
+(function ( Class ){
+	/////////////////////////////////////////////////////////////////////
+	//  ** ADD PROPERTY OBSERVATION TO Class **
+	/////////////////////////////////////////////////////////////////////
+
+	function ObserverSet(hostObject) {
+		var _observers = {};
+		/** .add registers a *property name*, to notify an *observer*, via a *callback*.
+			
+			Example: 
+			ModelObject.observers.add("name", DOMNode, function(object, newVal, propName) {
+				this.textContenxt = "Name is now: " + newVal;
+			}); 
+		*/
+		this.add = function(property, observer, cb) {
+			if (!_observers.hasOwnProperty(property)) {
+				_observers[property] = [];
+			}
+			var alreadyPresent = _observers[property].some(function(registration) {
+				return registration.observer === observer;
+			});
+			if (!alreadyPresent) {
+				_observers[property].push({"observer":observer, "callback": cb});
+				var currentValue = this[property];
+				if (typeof currentValue !== 'undefined') {
+					cb.call(observer, this, currentValue, property);
+				}
+			}
+		}.bind(hostObject);
+		/** When removing properties, you may supply undefined as the property name to
+		remove all registrations owned by observer. */
+		this.remove = function(property, observer) {
+			if (typeof property === 'undefined') {
+				// console.log("Removing all properties for observer", observer);
+				var properties = Object.getOwnPropertyNames(_observers);
+				var propertiesLen = properties.length >>> 0;
+				for (var i = 0; i < propertiesLen; i++) {
+					var propName = properties[i];
+					_observers[propName] = _observers[propName].filter( function(registration) {
+						return registration.observer !== observer;
+					});
+				}
+			}
+			if (_observers.hasOwnProperty(property)) {
+				_observers[property] = _observers[property].filter( function(registration) {
+					return registration.observer !== observer;
+				});
+			}
+		}.bind(hostObject);
+		this.notify = function(property, value) {
+			// console.log("Notifying", property, value, _observers[property]);
+			if (_observers.hasOwnProperty(property)) {
+				var registrations = _observers[property];
+				registrations.forEach(function(registration) {
+					registration.callback.call(registration.observer, this, value, property);
+				}.bind(this));
+			}
+		}.bind(hostObject);
+		return this;
+	}
+	
+	var observerGetter = function() {
+		if (this && !this.hasOwnProperty('_observers')) {
+			this._observers = new ObserverSet(this);
+		}
+		return this._observers;
+	};
+
+	Object.defineProperty(Class.prototype, "observers", { get: observerGetter });
+
+	Class.addObservableProperty = function(object, propName, customGetter, customSetter) {
+		var varName = "_" + propName;
+		// If customSetter is supplied, it must return *true* when observers should be notified.
+		var getter;
+		if (typeof customGetter === 'function') {
+			getter = customGetter;
+		} else {
+			getter = function() {
+				return this[varName];
+			};
+		}
+		var setter = customSetter;
+		if (typeof customSetter === 'function') {
+			var setter = function(newVal) {
+				if (customSetter.call(this, newVal)) {
+					this.observers.notify(propName, newVal);
+				}
+			}
+		} else {
+			setter = function(newVal) {
+				this[varName] = newVal;
+				this.observers.notify(propName, newVal);
+			}
+		}
+		Object.defineProperty(object, propName, {
+			get: getter,
+			set: setter
+		});
+	}
+
+	// RETURNS an anonymous setter function that should be called thusly: setter(object, newValue);
+	Class.addPrivateObservableProperty = function(object, propName) {
+		var array = Array();
+		for (var i = 0; i < 4; i++) {
+			array.push( ((Math.random() * 60466176) >>> 0).toString(36) ); // Five base36 characters (36^5)
+		}
+		var secretVarName = array.join('');
+		secretVarName = "_" + propName + "_" + secretVarName; // For debugging, don't use propName in production.
+		Object.defineProperty(object, propName, {
+			get: function() {
+				return this[secretVarName];
+			},
+		});
+		return function(object, newValue) {
+			object[secretVarName] = newValue;
+			object.observers.notify(propName, newValue);
+		};
+	}
+})(Class);
 
 module.exports = Class;
