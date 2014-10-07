@@ -199,6 +199,10 @@
 	};
 
 	Object.defineProperty(Class.prototype, "observers", { get: observerGetter });
+	
+	Class.makeObservable = function(proto) {
+		Object.defineProperty(proto, "observers", { get: observerGetter });
+	}
 
 	Class.addObservableProperty = function(object, propName, customGetter, customSetter) {
 		var varName = "_" + propName;
