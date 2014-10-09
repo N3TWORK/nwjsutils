@@ -182,6 +182,7 @@ function __arrayRequire(arr, cb)
 	}
 }
 
+var gCurrentPath = null;
 /**
 @function __require - Load the module located at path. Loading occurs 
   synchronously if cb is not provided. When cb is provided, this function
@@ -194,22 +195,64 @@ function __arrayRequire(arr, cb)
 */
 function __require(path, cb)
 {
-	var originalPath = path;
-	var href = document.location.href;
-	var q = href.indexOf("?");
-	if(q !== -1)
+	console.log("__require path", path);
+
+	// Determine the current directory from where require was called... wow
+	try
 	{
-		href = href.substring(0,q);
+		throw Error("");
 	}
-	var lastSlash = href.lastIndexOf("/");
-	var url;
-	if(-1 !== lastSlash)
+	catch(e)
 	{
-		url = href.substring(0,lastSlash) + "/";
+		try
+		{
+//			console.log("EXCEPTION: ", e.stack);
+			var lines = e.stack.split("\n");
+			var line = lines[lines.length-1];
+			if(line.length == 0) // firefox
+			{
+				line = lines[lines.length-2];
+			}
+//			console.log("LINE: " + line);
+			var matches = line.match("\://(.*)\:[0-9]+:[0-9]+");
+			if(matches)
+			{
+				console.log("MATCHES: ", matches);
+				var match = "http://" + matches[1];
+				if(match.indexOf("/require.js") == -1)
+				{
+					var e = match.lastIndexOf("/");
+					if(e !== -1)
+					{
+						match = match.substr(0,e+1);
+					}
+					gCurrentPath = match;
+				}
+				
+				if(gCurrentPath == null)
+				{
+					gCurrentPath = document.location.origin + document.location.path;
+				}
+			}
+		}
+		catch(e) // If all else fails, try based on the current URL.
+		{
+			gCurrentPath = document.location.origin + document.location.path;
+		}
+	}
+
+	console.log("CURRENT PATH: " + gCurrentPath);
+
+
+	var originalPath = path;
+	var url;
+	if(path.charAt(0) == "/")
+	{
+		url = document.location.origin + "/";
 	}
 	else
 	{
-		url = href + "/";
+		url = gCurrentPath;
 	}
 	
 	if(-1 == path.lastIndexOf(".js"))
