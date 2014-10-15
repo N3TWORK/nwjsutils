@@ -99,7 +99,10 @@ __requireModules['" + path + "'] =m.exports;";
 
 	var txt = document.createTextNode(js);
 	script.appendChild(txt);
-	document.body.appendChild(script);
+	
+	// Often body won't exist yet by the time the xhr has finished if the browser is caching... body is used only as a fallback, since head is optional in html
+	var scriptHolder = document.head || document.getElementsByTagName('head')[0] || document.body;
+	scriptHolder.appendChild(script);
 	var ret = __requireModules[path];
 
 	return ret;
