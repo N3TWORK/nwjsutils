@@ -80,7 +80,7 @@ var __requireModules = [];
 */
 function __requireAddModule(path, javascript)
 {
-	console.log(path);
+//	console.log(path);
 	var script = document.createElement("script");
 	script.type = "text/javascript";
 
@@ -195,7 +195,7 @@ function __arrayRequire(arr, cb)
 */
 function __require(path, cb)
 {
-	console.log(document.baseURI);
+//	console.log(document.baseURI);
 	var originalPath = path;
 	// TODO: This will probably be broken in IE and some solution is required -SCD
 	var href = document.baseURI;
