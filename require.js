@@ -69,7 +69,7 @@ function require(pathOrArrayOfPaths, cb)
 ////////////////////////////////////////////////////////////////////////////////
 // Internal functions below
 ////////////////////////////////////////////////////////////////////////////////
-var __requireModules = [];
+var __requireModules = {};
 
 /** 
 @function __requireAddModule - Injects the given javascript as a module into the
@@ -80,29 +80,33 @@ var __requireModules = [];
 */
 function __requireAddModule(path, javascript)
 {
-//	console.log(path);
-	var script = document.createElement("script");
-	script.type = "text/javascript";
+	if (!__requireModules.hasOwnProperty(path)) {
+		//	console.log(path);
+		var script = document.createElement("script");
+		script.type = "text/javascript";
 
-	var js = "\
-var m = (new function(){\nmodule={};\n" + javascript + "\n\
-    if('undefined' !== (typeof exports))\
-    {\
-        this.exports=exports;\
-    }\
-    if('undefined' !== (typeof module.exports))\
-    {\
-        this.exports=module.exports;\
-    }\
-    });\
-__requireModules['" + path + "'] =m.exports;";
+		var js = "\
+		var m = (new function(){\
+			\nmodule={};\n"
+			+ javascript + "\n\
+			if('undefined' !== (typeof exports))\
+			{\
+				this.exports=exports;\
+			}\
+			if('undefined' !== (typeof module.exports))\
+			{\
+				this.exports=module.exports;\
+			}\
+		});\
+		__requireModules['" + path + "'] =m.exports;";
 
-	var txt = document.createTextNode(js);
-	script.appendChild(txt);
+		var txt = document.createTextNode(js);
+		script.appendChild(txt);
 	
-	// Often body won't exist yet by the time the xhr has finished if the browser is caching... body is used only as a fallback, since head is optional in html
-	var scriptHolder = document.head || document.getElementsByTagName('head')[0] || document.body;
-	scriptHolder.appendChild(script);
+		// Often body won't exist yet by the time the xhr has finished if the browser is caching... body is used only as a fallback, since head is optional in html
+		var scriptHolder = document.head || document.getElementsByTagName('head')[0] || document.body;
+		scriptHolder.appendChild(script);
+	}
 	var ret = __requireModules[path];
 
 	return ret;
