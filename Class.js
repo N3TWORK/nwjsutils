@@ -219,7 +219,7 @@
 		if (typeof customSetter === 'function') {
 			var setter = function(newVal) {
 				if (customSetter.call(this, newVal)) {
-					this.observers.notify(propName, newVal);
+					this.observers.notify(propName, getter.call(this));
 				}
 			}
 		} else {
