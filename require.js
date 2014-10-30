@@ -244,15 +244,16 @@ function __require(path, cb)
 	var xhr = new XMLHttpRequest();
 	if(cb)
 	{
-		xhr.open("GET", url, true);
+		xhr.open("GET", url + "?" + Math.random(), true);
         xhr.setRequestHeader("Cache-Control", "no-cache"); // Disable broken browser caching of XHR
+		xhr.responseType = "text";
 		xhr.onload = function(e)
 		{
 			if(4 === xhr.readyState)
 			{
 				if(200 === xhr.status)
 				{
-					var m = __requireAddModule(url, xhr.responseText);
+					var m = __requireAddModule(url, xhr.response || xhr.responseText);
 					cb(m, originalPath);
 				}
 			}
