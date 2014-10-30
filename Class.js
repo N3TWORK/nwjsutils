@@ -75,6 +75,17 @@
 		  }
 	  }
   }
+  
+  Class.prototype.isKindOfClass = function(klass)
+  {
+	  var aProto = Object.getPrototypeOf(this);
+  	  do {
+		  if (aProto === klass.prototype) {
+			  return true;
+		  }
+  	  } while (aProto = Object.getPrototypeOf(aProto));
+	  return false;
+  }
  
   // Create a new Class that inherits from this class
   Class.extend = function(prop) {
