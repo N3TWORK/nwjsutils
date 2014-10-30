@@ -27,11 +27,11 @@
 //   http://ejohn.org/blog/simple-javascript-inheritance/ 
 //
 ///////////////////////////////////////////////////////////////////////////////
-(function(){
+module.exports = (function(){
   var initializing = false, fnTest = /xyz/.test(function(){xyz;}) ? /\b_super\b/ : /.*/;
  
   // The base Class implementation (does nothing)
-  this.Class = function(){};
+  var Class = function(){};
  
   Class.prototype.addEventListener = function(type, listener, useCapture)
   {
@@ -78,7 +78,7 @@
   
   Class.prototype.isKindOfClass = function(klass)
   {
-	  var aProto = Object.getPrototypeOf(this);
+	  var aProto = this.prototype || Object.getPrototypeOf(this);
   	  do {
 		  if (aProto === klass.prototype) {
 			  return true;
@@ -133,12 +133,16 @@
    
     // Enforce the constructor to be what we expect
     Class.prototype.constructor = Class;
+	
+	Class.isKindOfClass = Class.prototype.isKindOfClass;
  
     // And make this class extendable
     Class.extend = arguments.callee;
    
     return Class;
   };
+  
+  return Class;
 })();
 
 (function ( Class ){
@@ -263,6 +267,4 @@
 			object.observers.notify(propName, newValue);
 		};
 	}
-})(Class);
-
-module.exports = Class;
+})(module.exports);
